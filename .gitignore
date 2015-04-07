@@ -233,6 +233,7 @@ $RECYCLE.BIN/
 
 # Xcode
 #
+*.xcodeproj
 build/
 *.pbxuser
 !default.pbxuser

@@ -319,6 +319,7 @@ void AppMain() {
 
 int main(int argc, char *argv[]) {
     try {
+        std::cout << "Testing for Connor\n";
         AppMain();
     } catch (const std::exception& e){
         std::cerr << "ERROR: " << e.what() << std::endl;
