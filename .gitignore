@@ -284,3 +284,5 @@ DerivedData
 *.exe
 *.out
 *.app
+
+platforms/*
