@@ -17,32 +17,31 @@
  */
 
 #include "Program.h"
-#include <stdexcept>
-#include <glm/gtc/type_ptr.hpp>
 
 using namespace tdogl;
+using namespace std;
 
-Program::Program(const std::vector<Shader>& shaders) :
+Program::Program(shared_ptr<std::vector<Shader>> shaders) :
     _object(0)
 {
-    if(shaders.size() <= 0)
+    if(shaders->size() <= 0)
         throw std::runtime_error("No shaders were provided to create the program");
     
     //create the program object
     _object = glCreateProgram();
-    if(_object == 0)
+    if(!_object)
         throw std::runtime_error("glCreateProgram failed");
     
     //attach all the shaders
-    for(unsigned i = 0; i < shaders.size(); ++i)
-        glAttachShader(_object, shaders[i].object());
+    for(unsigned i = 0; i < shaders->size(); ++i)
+        glAttachShader(_object, shaders->at(i).object());
     
     //link the shaders together
     glLinkProgram(_object);
     
     //detach all the shaders
-    for(unsigned i = 0; i < shaders.size(); ++i)
-        glDetachShader(_object, shaders[i].object());
+    for(unsigned i = 0; i < shaders->size(); ++i)
+        glDetachShader(_object, shaders->at(i).object());
     
     //throw exception if linking failed
     GLint status;

@@ -21,6 +21,10 @@
 #include "Shader.h"
 #include <vector>
 #include <glm/glm.hpp>
+#include <stdexcept>
+#include <glm/gtc/type_ptr.hpp>
+#include <memory>
+#include <algorithm>
 
 namespace tdogl {
 
@@ -38,7 +42,7 @@ namespace tdogl {
          
          @see tdogl::Shader
          */
-        Program(const std::vector<Shader>& shaders);
+        Program(std::shared_ptr<std::vector<Shader>> shaders);
         ~Program();
         
         

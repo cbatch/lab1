@@ -29,11 +29,19 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
+#include <memory>
+#include <algorithm>
 
 // tdogl classes
 #include "tdogl/Program.h"
 #include "tdogl/Texture.h"
 #include "tdogl/Camera.h"
+#include "tdogl/Mesh.h"
+#include "tdogl/BunnyRecord.h"
+
+using namespace std;
+using namespace tdogl;
+using namespace glm;
 
 // constants
 const glm::vec2 SCREEN_SIZE(800, 600);
@@ -41,25 +49,27 @@ const glm::vec2 SCREEN_SIZE(800, 600);
 // globals
 GLFWwindow* gWindow = NULL;
 double gScrollY = 0.0;
-tdogl::Texture* gTexture = NULL;
-tdogl::Program* gProgram = NULL;
-tdogl::Camera gCamera;
-GLuint gVAO = 0;
-GLuint gVBO = 0;
-GLfloat gDegreesRotated = 0.0f;
+tdogl::Camera gCamera(SCREEN_SIZE.x, SCREEN_SIZE.y);
+//MeshLoader loader = MeshLoader();
+//map<string, GameModel> models;
+//vector<GameObject> worldObjects;
+Program* program;
+BunnyRecord* record;
+Mesh* mesh;
+
 
 
 // loads the vertex shader and fragment shader, and links them to make the global gProgram
-static void LoadShaders() {
-    std::vector<tdogl::Shader> shaders;
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
-    shaders.push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
+/*static void LoadShaders() {
+    std::shared_ptr<std::vector<tdogl::Shader>> shaders(new std::vector<tdogl::Shader>);
+    shaders->push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
+    shaders->push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
     gProgram = new tdogl::Program(shaders);
-}
+}*/
 
 
 // loads a cube into the VAO and VBO globals: gVAO and gVBO
-static void LoadCube() {
+/*static void LoadCube() {
     // make and bind the VAO
     glGenVertexArrays(1, &gVAO);
     glBindVertexArray(gVAO);
@@ -131,16 +141,50 @@ static void LoadCube() {
 
     // unbind the VAO
     glBindVertexArray(0);
-}
+}*/
 
 
 // loads the file "wooden-crate.jpg" into gTexture
-static void LoadTexture() {
+/*static void LoadTexture() {
     tdogl::Bitmap bmp = tdogl::Bitmap::bitmapFromFile(ResourcePath("wooden-crate.jpg"));
     bmp.flipVertically();
     gTexture = new tdogl::Texture(bmp);
+}*/
+
+
+/*void initModels()
+{
+    loader.LoadMeshes({"bunny.obj"});
+	GameModel bunny = GameModel(*loader.getMesh("bunny"), 0.0f);
+	bunny.resetTransformation();
+    models.insert(pair<string, GameModel>("bunny", bunny));
 }
 
+void initObjects()
+{
+	models.at("bunny").resetTransformation();
+    worldObjects.push_back(GameObject(&models.at("bunny"), OBJECT_SCENERY, vec3(0.0, 0.0, 0.0)));
+}
+
+void initDataHandles()
+{
+    std::shared_ptr<std::vector<tdogl::Shader>> shaders(new std::vector<tdogl::Shader>);
+    shaders->push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
+    shaders->push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
+    program = new Program(shaders);
+}*/
+
+void loadMesh()
+{
+    record = new BunnyRecord();
+    std::shared_ptr<std::vector<tdogl::Shader>> shaders(new std::vector<tdogl::Shader>);
+    shaders->push_back(tdogl::Shader::shaderFromFile(ResourcePath("vertex-shader.txt"), GL_VERTEX_SHADER));
+    shaders->push_back(tdogl::Shader::shaderFromFile(ResourcePath("fragment-shader.txt"), GL_FRAGMENT_SHADER));
+    program = new Program(shaders);
+    mesh = new Mesh("bunny.obj", shaders);
+    mesh->init();
+
+}
 
 // draws a single frame
 static void Render() {
@@ -148,31 +192,22 @@ static void Render() {
     glClearColor(0, 0, 0, 1); // black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // bind the program (the shaders)
-    gProgram->use();
-
-    // set the "camera" uniform
-    gProgram->setUniform("camera", gCamera.matrix());
-
-    // set the "model" uniform in the vertex shader, based on the gDegreesRotated global
-    gProgram->setUniform("model", glm::rotate(glm::mat4(), glm::radians(gDegreesRotated), glm::vec3(0,1,0)));
-        
-    // bind the texture and set the "tex" uniform in the fragment shader
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, gTexture->object());
-    gProgram->setUniform("tex", 0); //set to 0 because the texture is bound to GL_TEXTURE0
-
-    // bind the VAO (the triangle)
-    glBindVertexArray(gVAO);
-    
-    // draw the VAO
-    glDrawArrays(GL_TRIANGLES, 0, 6*2*3);
-    
-    // unbind the VAO, the program and the texture
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    gProgram->stopUsing();
-    
+    /*for(int i = 0; i < worldObjects.size(); i++)
+    {
+		program->use();
+		glBindVertexArray(worldObjects[i].getModel()->getMesh().VAO);
+		glEnableVertexAttribArray(program->attrib("vert"));
+		glVertexAttribPointer(program->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(program->attrib("norm"));
+		glVertexAttribPointer(program->attrib("norm"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+        program->setUniform("model", worldObjects[i].getTransformation());
+        program->setUniform("camera", gCamera.matrix());
+		//cout << worldObjects[i].getModel()->getMesh().indexCount(0) << "\n";
+        glDrawElements(GL_TRIANGLES, worldObjects[i].getModel()->getMesh().indexCount(0), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+		program->stopUsing();
+    }*/
+    mesh->with(record).draw(gCamera.matrix());
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers(gWindow);
 }
@@ -181,34 +216,34 @@ static void Render() {
 // update the scene based on the time elapsed since last update
 void Update(float secondsElapsed) {
     //rotate the cube
-    const GLfloat degreesPerSecond = 180.0f;
+    /*const GLfloat degreesPerSecond = 180.0f;
     gDegreesRotated += secondsElapsed * degreesPerSecond;
-    while(gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;
+    while(gDegreesRotated > 360.0f) gDegreesRotated -= 360.0f;*/
 
     //move position of camera based on WASD keys, and XZ keys for up and down
     const float moveSpeed = 2.0; //units per second
     if(glfwGetKey(gWindow, 'S')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.forward());
+        gCamera.offsetPosition(GLFW_KEY_S);
     } else if(glfwGetKey(gWindow, 'W')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.forward());
+		gCamera.offsetPosition(GLFW_KEY_W);
     }
     if(glfwGetKey(gWindow, 'A')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * -gCamera.right());
+		gCamera.offsetPosition(GLFW_KEY_A);
     } else if(glfwGetKey(gWindow, 'D')){
-        gCamera.offsetPosition(secondsElapsed * moveSpeed * gCamera.right());
+		gCamera.offsetPosition(GLFW_KEY_D);
     }
-    if(glfwGetKey(gWindow, 'Z')){
+    /*if(glfwGetKey(gWindow, 'Z')){
         gCamera.offsetPosition(secondsElapsed * moveSpeed * -glm::vec3(0,1,0));
     } else if(glfwGetKey(gWindow, 'X')){
         gCamera.offsetPosition(secondsElapsed * moveSpeed * glm::vec3(0,1,0));
-    }
+    }*/
 
     //rotate camera based on mouse movement
-    const float mouseSensitivity = 0.1f;
+    /*const float mouseSensitivity = 0.1f;
     double mouseX, mouseY;
     glfwGetCursorPos(gWindow, &mouseX, &mouseY);
-    gCamera.offsetOrientation(mouseSensitivity * (float)mouseY, mouseSensitivity * (float)mouseX);
-    glfwSetCursorPos(gWindow, 0, 0); //reset the mouse, so it doesn't go out of the window
+    gCamera.offsetOrientation((float)mouseY,(float)mouseX);*/
+    //glfwSetCursorPos(gWindow, 0, 0); //reset the mouse, so it doesn't go out of the window
 
     //increase or decrease field of view based on mouse wheel
     const float zoomSensitivity = -0.2f;
@@ -226,6 +261,12 @@ void OnScroll(GLFWwindow* window, double deltaX, double deltaY) {
 
 void OnError(int errorCode, const char* msg) {
     throw std::runtime_error(msg);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	gCamera.offsetOrientation((float)ypos, (float)xpos);
+    std::cout << "mouse xCor: " << xpos << " mouse yCor: " << ypos << "\n";
 }
 
 // the program starts here
@@ -247,9 +288,11 @@ void AppMain() {
 
     // GLFW settings
     glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPos(gWindow, 0, 0);
+	glfwSetCursorPosCallback(gWindow, mouse_callback);
+	glfwSetCursorPos(gWindow, 0.0, 0.0);
     glfwSetScrollCallback(gWindow, OnScroll);
     glfwMakeContextCurrent(gWindow);
+
 
     // initialise GLEW
     glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
@@ -276,17 +319,17 @@ void AppMain() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // load vertex and fragment shaders into opengl
-    LoadShaders();
+    //LoadShaders();
 
     // load the texture
-    LoadTexture();
+    //LoadTexture();
 
     // create buffer and fill it with the points of the triangle
-    LoadCube();
+    loadMesh();
 
     // setup gCamera
-    gCamera.setPosition(glm::vec3(0,0,4));
-    gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
+    gCamera.setPosition(glm::vec3(0,0,2));
+    //gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 
     // run while the window is open
     double lastTime = glfwGetTime();

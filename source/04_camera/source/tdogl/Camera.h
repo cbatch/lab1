@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
 
 
 namespace tdogl {
@@ -33,14 +34,14 @@ namespace tdogl {
      */
     class Camera {
     public:
-        Camera();
+        Camera(float height, float width);
 
         /**
          The position of the camera.
          */
         const glm::vec3& position() const;
         void setPosition(const glm::vec3& position);
-        void offsetPosition(const glm::vec3& offset);
+        void offsetPosition(int direction);
 
         /**
          The vertical viewing angle of the camera, in degrees.
@@ -88,7 +89,7 @@ namespace tdogl {
 
          Does not include translation (the camera's position).
          */
-        glm::mat4 orientation() const;
+        //glm::mat4 orientation() const;
 
         /**
          Offsets the cameras orientation.
@@ -101,13 +102,6 @@ namespace tdogl {
         void offsetOrientation(float upAngle, float rightAngle);
 
         /**
-         Orients the camera so that is it directly facing `position`
-
-         @param position  the position to look at
-         */
-        void lookAt(glm::vec3 position);
-
-        /**
          The width divided by the height of the screen/window/viewport
 
          Incorrect values will make the 3D scene look stretched.
@@ -116,13 +110,13 @@ namespace tdogl {
         void setViewportAspectRatio(float viewportAspectRatio);
 
         /** A unit vector representing the direction the camera is facing */
-        glm::vec3 forward() const;
+        //glm::vec3 forward() const;
 
         /** A unit vector representing the direction to the right of the camera*/
-        glm::vec3 right() const;
+        //glm::vec3 right() const;
 
         /** A unit vector representing the direction out of the top of the camera*/
-        glm::vec3 up() const;
+        //glm::vec3 up() const;
 
         /**
          The combined camera transformation matrix, including perspective projection.
@@ -152,6 +146,15 @@ namespace tdogl {
         float _nearPlane;
         float _farPlane;
         float _viewportAspectRatio;
+        float _theta;
+        float _phi;
+        float _height;
+        float _width;
+        glm::vec3 strafeVec;
+        glm::vec3 viewVec;
+		float lastX, lastY;
+		float theta, phi;
+		glm::vec3 cameraFront;
 
         void normalizeAngles();
     };

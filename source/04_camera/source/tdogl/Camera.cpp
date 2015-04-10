@@ -19,19 +19,27 @@
 #include <cmath>
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 using namespace tdogl;
+using namespace glm;
 
 static const float MaxVerticalAngle = 85.0f; //must be less than 90 to avoid gimbal lock
 
-Camera::Camera() :
-    _position(0.0f, 0.0f, 1.0f),
+Camera::Camera(float width, float height) :
+    _position(0.0f, 0.0f, 0.0f),
     _horizontalAngle(0.0f),
     _verticalAngle(0.0f),
-    _fieldOfView(50.0f),
-    _nearPlane(0.01f),
+    _fieldOfView(M_PI/4),
+    _nearPlane(0.1f),
     _farPlane(100.0f),
-    _viewportAspectRatio(4.0f/3.0f)
+    _height(height),
+    _width(width),
+    _viewportAspectRatio(width/height),
+	lastX(width/2),
+	lastY(height/2),
+	theta(0.0f),
+	phi(0.0f)
 {
 }
 
@@ -43,8 +51,17 @@ void Camera::setPosition(const glm::vec3& position) {
     _position = position;
 }
 
-void Camera::offsetPosition(const glm::vec3& offset) {
-    _position += offset;
+void Camera::offsetPosition(int direction) {
+	// Camera controls
+	float cameraSpeed = 0.02f;
+	if (GLFW_KEY_W == direction)
+		_position += cameraSpeed * cameraFront;
+	if (GLFW_KEY_S == direction)
+		_position -= cameraSpeed * cameraFront;
+	if (GLFW_KEY_A == direction)
+		_position -= normalize(cross(cameraFront, vec3(0.0, 1.0f, 0.0f))) * cameraSpeed;
+	if (GLFW_KEY_D == direction)
+		_position += normalize(cross(cameraFront, vec3(0.0, 1.0f, 0.0f))) * cameraSpeed;
 }
 
 float Camera::fieldOfView() const {
@@ -71,25 +88,37 @@ void Camera::setNearAndFarPlanes(float nearPlane, float farPlane) {
     _farPlane = farPlane;
 }
 
-glm::mat4 Camera::orientation() const {
+/*glm::mat4 Camera::orientation() const {
     glm::mat4 orientation;
     orientation = glm::rotate(orientation, glm::radians(_verticalAngle), glm::vec3(1,0,0));
     orientation = glm::rotate(orientation, glm::radians(_horizontalAngle), glm::vec3(0,1,0));
     return orientation;
-}
+}*/
 
-void Camera::offsetOrientation(float upAngle, float rightAngle) {
-    _horizontalAngle += rightAngle;
-    _verticalAngle += upAngle;
-    normalizeAngles();
-}
+void Camera::offsetOrientation(float ypos, float xpos) {
+    //std::cout << "mouse xCor: " << xCor << " mouse yCor: " << yCor << "\n";
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
 
-void Camera::lookAt(glm::vec3 position) {
-    assert(position != _position);
-    glm::vec3 direction = glm::normalize(position - _position);
-    _verticalAngle = glm::radians(asinf(-direction.y));
-    _horizontalAngle = -glm::radians(atan2f(-direction.x, -direction.z));
-    normalizeAngles();
+	float sensitivity = 0.1;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	theta += xoffset;
+	phi += yoffset;
+
+	if (phi > 80.0f)
+		phi = 80.0f;
+	if (phi < -80.0f)
+		phi = -80.0f;
+
+	vec3 front;
+	front.x = cos(radians(theta)) * cos(radians(phi));
+	front.y = sin(radians(phi));
+	front.z = sin(radians(theta)) * cos(radians(phi));
+	cameraFront = normalize(front);
 }
 
 float Camera::viewportAspectRatio() const {
@@ -101,7 +130,7 @@ void Camera::setViewportAspectRatio(float viewportAspectRatio) {
     _viewportAspectRatio = viewportAspectRatio;
 }
 
-glm::vec3 Camera::forward() const {
+/*glm::vec3 Camera::forward() const {
     glm::vec4 forward = glm::inverse(orientation()) * glm::vec4(0,0,-1,1);
     return glm::vec3(forward);
 }
@@ -114,18 +143,19 @@ glm::vec3 Camera::right() const {
 glm::vec3 Camera::up() const {
     glm::vec4 up = glm::inverse(orientation()) * glm::vec4(0,1,0,1);
     return glm::vec3(up);
-}
+}*/
 
 glm::mat4 Camera::matrix() const {
     return projection() * view();
 }
 
 glm::mat4 Camera::projection() const {
-    return glm::perspective(glm::radians(_fieldOfView), _viewportAspectRatio, _nearPlane, _farPlane);
+    return glm::perspective(radians(_fieldOfView), _viewportAspectRatio, _nearPlane, _farPlane);
 }
 
 glm::mat4 Camera::view() const {
-    return orientation() * glm::translate(glm::mat4(), -_position);
+    //return orientation() * glm::translate(glm::mat4(), -_position);
+	return glm::lookAt(_position, _position + cameraFront, vec3(0.0, 1.0, 0.0));
 }
 
 void Camera::normalizeAngles() {

@@ -4,14 +4,13 @@ uniform mat4 camera;
 uniform mat4 model;
 
 in vec3 vert;
-in vec2 vertTexCoord;
+in vec3 norm;
 
-out vec2 fragTexCoord;
+out vec3 oNormCol;
 
 void main() {
-    // Pass the tex coord straight through to the fragment shader
-    fragTexCoord = vertTexCoord;
-    
+    // Pass the tex coord straight through to the fragment shader    
     // Apply all matrix transformations to vert
     gl_Position = camera * model * vec4(vert, 1);
+    oNormCol = 0.5*(vec3(norm) + 1.0);;
 }
