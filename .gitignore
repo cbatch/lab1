@@ -31,7 +31,6 @@ bld/
 TestResult.xml
 
 # Build Results of an ATL Project
-[Dd]ebugPS/
 [Rr]eleasePS/
 dlldata.c
 
@@ -40,7 +39,6 @@ dlldata.c
 *_i.h
 *.ilk
 *.meta
-*.obj
 *.pch
 *.pdb
 *.pgc
@@ -261,7 +259,6 @@ DerivedData
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
