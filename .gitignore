@@ -270,7 +270,6 @@ DerivedData
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -279,7 +278,6 @@ DerivedData
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
