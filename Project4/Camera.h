@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <GLFW/glfw3.h>
+#include "glm/gtx/string_cast.hpp"
 using namespace glm;
 
 static const float MaxVerticalAngle = 85.0f; //must be less than 90 to avoid gimbal lock
@@ -25,15 +26,16 @@ private:
 	// Camera Angle
 	float theta, phi;
 	// Camera Vectors for lookAt
-	vec3 camera_position;
-	vec3 camera_front;
-	vec3 camera_up;
 	// Key Map for Strafing
 	bool keys[1024];
     // Camera pointers for callbacks
     static std::shared_ptr<Camera> playerCamera;
     static std::shared_ptr<Camera> debugCamera;
 public:
+    vec3 camera_position;
+    vec3 camera_front;
+    vec3 camera_up;
+
 	Camera();
 
     static void set_player_camera(std::shared_ptr<Camera> camera);

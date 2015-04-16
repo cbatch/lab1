@@ -1,4 +1,4 @@
-attribute vec4 aPosition;
+attribute vec3 aPosition;
 attribute vec3 aNormal;
 
 uniform mat4 uProjMatrix;
@@ -16,7 +16,8 @@ varying vec3 vLight;
 
 void main()
 {
-	gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
+	gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
 	vNormals = vec3(uViewMatrix * uModelMatrix * vec4(normalize(aNormal), 0.0));
-	vLight = uLightPos - vec3(uViewMatrix * uModelMatrix * aPosition);
+	vLight = uLightPos - vec3(uViewMatrix * uModelMatrix * vec4(aPosition, 1.0));
+
 }

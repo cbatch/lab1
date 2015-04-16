@@ -1,4 +1,7 @@
 #include "Camera.h"
+#include <iostream>
+
+using namespace std;
 
 std::shared_ptr<Camera> Camera::playerCamera = NULL;
 
@@ -12,7 +15,7 @@ Camera::Camera()
 	yPrev = 0.0f;
 	theta = 0.0f;
 	phi = 0.0f;
-	camera_position = vec3(0.0f, 0.0f, 3.0f);
+	camera_position = vec3(0.0f, 0.6f, 3.0f);
 	camera_front = vec3(0.0f, 0.0f, -1.0f);
 	camera_up = vec3(0.0f, 1.0f, 0.0f);
 	keys[1024] = { false };
@@ -123,9 +126,9 @@ void Camera::movement()
 {
     float cameraSpeed = 0.2f;
     if (keys[GLFW_KEY_W])
-        camera_position += cameraSpeed * camera_front;
+        camera_position += cameraSpeed * vec3(camera_front.x, 0.f, camera_front.z);
     if (keys[GLFW_KEY_S])
-        camera_position -= cameraSpeed * camera_front;
+		camera_position -= cameraSpeed * vec3(camera_front.x, 0.f, camera_front.z);
     if (keys[GLFW_KEY_A])
         camera_position -= normalize(cross(camera_front, camera_up)) * cameraSpeed;
     if (keys[GLFW_KEY_D])
