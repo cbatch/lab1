@@ -80,9 +80,9 @@ bool GameObject::step(void(*delete_coin)())
     if (frameTime > 0.01)
     {
         if (!butterfly_net_captured)
-            rotation *= rotate(2.f * frameTime, vec3(0.f, 1.0f, 0.f));
+            rotation *= rotate(5.f * frameTime, vec3(0.f, 1.0f, 0.f));
         else
-            rotation *= rotate(10.f * frameTime, vec3(0.f, 1.0f, 0.f));
+            rotation *= rotate(25.f * frameTime, vec3(0.f, 1.0f, 0.f));
 		
 		vec3 vec = (frameTime * velocity);
 		translation[3][0] += vec.x;

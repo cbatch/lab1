@@ -124,7 +124,7 @@ void Camera::debug_key_callback(GLFWwindow* window, int key, int scancode, int a
  */
 void Camera::movement()
 {
-    float cameraSpeed = 0.2f;
+    float cameraSpeed = 0.02f;
     if (keys[GLFW_KEY_W])
         camera_position += cameraSpeed * vec3(camera_front.x, 0.f, camera_front.z);
     if (keys[GLFW_KEY_S])

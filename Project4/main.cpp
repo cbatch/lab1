@@ -244,6 +244,7 @@ void drawGL()
 
         glBindBuffer(GL_ARRAY_BUFFER, mesh.getPosBufferObject(0));
         glVertexAttribPointer(phongShader.getAttributeHandle("aPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(phongShader.getAttributeHandle("aPosition"), 3, GL_FLOAT, GL_FALSE, 0, 0);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.getNorBufferObject(0));
         glVertexAttribPointer(phongShader.getAttributeHandle("aNormal"), 3, GL_FLOAT, GL_FALSE, 0, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIdxBufferObject(0));
@@ -366,6 +367,7 @@ int main(int argc, char **argv)
 
     double renderTime;
 	double lastTime = 0.0;
+	int i = 0;
 
 	do
 	{
@@ -376,9 +378,13 @@ int main(int argc, char **argv)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		renderTime = glfwGetTime() - renderTime;
-		cout << "Frame Rate: " << 1 / (renderTime * 0.9 + lastTime * 0.1) << endl;
-        cout << "Collected Coins: " << collected_coins << endl;
-        cout << "Coins on Screen: " << worldObjects.size() - 1 + inside_butterfly_net.size() << endl << endl;
+		if (!(i % 50))
+		{
+			cout << "Frame Rate: " << 1 / (renderTime * 0.9 + lastTime * 0.1) << endl;
+			cout << "Collected Coins: " << collected_coins << endl;
+			cout << "Coins on Screen: " << worldObjects.size() - 1 + inside_butterfly_net.size() << endl << endl;
+		}
+		i++;
 		lastTime = renderTime;
 
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS
